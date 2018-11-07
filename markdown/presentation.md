@@ -8,7 +8,7 @@
 # Sommaire
 
 - Moi, moi, moi !
-- Relation data / comportement: divergence de points de vue
+- Relation donnée / comportement: divergence de points de vue
 - Polymorquoi ?
 - Anatomie de la _type class_
 - _Type class_ meca-augmentée !
@@ -27,22 +27,24 @@
 
 ----
 
-# Relation data / comportement: divergence de points de vue !
+# Relation donnée / comportement: divergence de points de vue !
 
 
 
-## _Orienté objet_
+## Séparation donnée / comportement
 
-![Pic pirate](/ressources/img/pic_pirate.jpg) <!-- .element style="border: 0; background: None; box-shadow: None; width: 600px; margin-bottom: 0px; margin-top: 0px;" -->
+La programmation orientée objet et la fonctionnelle ont des relations entre la donnée et leurs comportements fondamentalement opposées !
+
+
+
+#### _Orienté objet_
 
 L'OOP combine la donnée et le comportement dans des _classes_
 
+![Pic pirate](/ressources/img/pic_pirate.jpg) <!-- .element style="border: 0; background: None; box-shadow: None; width: 300px; margin-bottom: 0px; margin-top: 0px;" -->
+
 - Encapsule et cache la donnée
 - Expose des méthodes pour agir dessus
-
-
-
-## _Orienté objet_
 
 ```scala
 case class Player(nickname: String, var level: Int) {
@@ -53,17 +55,14 @@ case class Player(nickname: String, var level: Int) {
 
 
 
-## _Programmation fonctionnelle_
-
-![Pic pirate](/ressources/img/separation.jpg) <!-- .element style="border: 0; background: None; box-shadow: None; width: 600px; margin-bottom: 0px; margin-top: 0px;" -->
+#### _Programmation fonctionnelle_
 
 La FP sépare complètement la donnée et le comportement
+
+![Pic pirate](/ressources/img/separation.jpg) <!-- .element style="border: 0; background: None; box-shadow: None; width: 300px; margin-bottom: 0px; margin-top: 0px;" -->
+
 - La donnée est modelisée par les _types_ (ADTs)
 - Le comportement est modélisé par des _fonctions_ (depuis et vers ces _types_)
-
-
-
-## _Programmation fonctionnelle_
 
 ```scala
 case class Player(nickname: String, var level: Int)
@@ -73,6 +72,33 @@ object PlayerOperations {
     def sayHi(p: Player): String   = s"Hi, I'm player ${p.nickname}, I'm lvl ${p.level} !"
 }
 ```
+
+
+
+## Expression problem
+
+Comment se comporte une code base existante quand on:
+
+- Étends un type existant
+- Étends les comportements d'un type existant
+
+
+
+#### _Orienté objet_
+
+- 👍 : Étendre un type existant
+    - Nouvelle _classe_ qui _extends_ mon type existant (l'existant reste inchangé)
+- 👎 : Étendre les comportements d'un type existant
+    - Nouvelle _méthode_ sur l'interface (impact sur tous les sous types existant...)
+
+
+
+#### _Programmation fonctionnelle_
+
+- 👎  : Étendre un type existant
+    - Nouvelle implémentation d'un sealed trait (impact sur toutes les fonctions existantes traitant ce type pour traiter ce nouveau cas...)
+- 👍 : Étendre les comportements d'un type existant
+    - Nouvelle fonction (l'existant reste inchangé)
 
 ----
 
@@ -107,13 +133,11 @@ Une fonction se réfère à une _"interface"_ commune à un ensemble de types ar
 - Evite de ré-implémenter une fonction pour chaques type concrets
 - Le comportement d'une fonction dépend du type de son paramètre
 - Implémentations
-    - _operator overloading_ (on en parlera pas ici)
-    - _OOP_
-        - __interface subtyping / adapter pattern__
+    - _Operator overloading_ (on en parlera pas ici)
+    - __Interface subtyping / adapter pattern__
         - `def show(s: Showable): String`
         - ಥ_ಥ
-    - _FP_
-        - __type classes__
+    - __Type classes__
         - `def show[S](s: S)(implicit show: Showable[S]): String`
         - ᕕ( ᐛ )ᕗ
 
@@ -186,9 +210,11 @@ greet(geekocephale, playerGreeter)
 ## Anatomie fonctionnelle
 
 - Utilisons les __implicits__ pour se rapprocher de ce qui est fait en _Haskell_
-- On peut mettre les instances de _type class_:
-    - Dans l'object compagnon du trait de la _type class_
-    - Dans l'object compagnon du type
+- 2 règles d'hygiène fondamentales:
+    - Une seule instance de _type class_ par type
+    - On ne met les instances de _type class_ que:
+        - Dans l'object compagnon du trait de la _type class_
+        - Dans l'object compagnon du type
 
 ```scala
 object Player {
