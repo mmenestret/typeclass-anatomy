@@ -1,4 +1,4 @@
-# Anatomie d'une typeclass
+# Anatomie d'une type class
 
 ## Lancer la présentation
 
