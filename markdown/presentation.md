@@ -238,7 +238,7 @@ def greet[T](t: T)(implicit greeter: CanGreet[T]): String = greeter.sayHi(t)
 
 ## Retour à l'anatomie comparée
 
-Ajout de propriétés à des types existants
+#### Ajout de propriétés à des types existants
 
 ```scala
 import java.net.URL
@@ -248,13 +248,17 @@ implicit val urlGreeter: CanGreet[URL] = new CanGreet[URL] {
 }
 ```
 
-Interfaçage conditionnel
+Maintenant votre _URL_ sait dire bonjour !
+
+#### Interfaçage conditionnel
 
 ```scala
-implicit def listGreeter[A: CanGreet]: CanGreet[List[A]] = new CanGreet[List[A]] {
+implicit def listGreeter[A: CanGreet: CanWave]: CanGreet[List[A]] = new CanGreet[List[A]] {
     override def sayHi(t: List[A]): String = s"Hi, I'm an List : [${t.map(CanGreet[A].sayHi).mkString(",")}]"
 }
-```  
+```
+
+`List[A]` est une instance de la _type class_ `CanGreet` si et seulement si `A` en est une instance mais également une instance de `CanWave`.
 
 ----
 
