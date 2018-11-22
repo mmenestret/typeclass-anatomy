@@ -46,7 +46,7 @@ L'OOP combine la donnée et le comportement dans des _classes_
 - Encapsule et cache la donnée
 - Expose des méthodes pour agir dessus
 
-```scala
+```tut:silent
 case class Player(nickname: String, var level: Int) {
     def levelUp(): Unit          = { level = level + 1 }
     def sayHi(): String          = s"Hi, I'm player $nickname, I'm lvl $level !"
@@ -64,7 +64,7 @@ La FP sépare complètement la donnée et le comportement
 - La donnée est modelisée par les _types_ (ADTs)
 - Le comportement est modélisé par des _fonctions_ (depuis et vers ces _types_)
 
-```scala
+```tut:silent
 case class Player(nickname: String, var level: Int)
 
 object PlayerOperations {
@@ -171,13 +171,13 @@ En Scala, on encode les _type classes_: ce n'est pas une construction de premiè
 ## Anatomie fonctionnelle
 
 
-```scala
+```tut:silent
 // Notre classe "métier"
 case class Player(nickname: String, level: Int)
 val geekocephale = Player("Geekocephale", 42)
 ```
 
-```scala
+```tut:silent
 // 1. Un trait: tous les T qui peuvent dire bonjour
 trait CanGreet[T] {
     def sayHi(t: T): String
@@ -189,7 +189,7 @@ val playerGreeter: CanGreet[Player] = new CanGreet[Player] {
 }
 ```
 
-```scala
+```tut:silent
 // Une fonction polymorphique
 def greet[T](t: T, greeter: CanGreet[T]): String = greeter.sayHi(t)
 
@@ -216,7 +216,7 @@ greet(geekocephale, playerGreeter)
         - Dans l'object compagnon du trait de la _type class_
         - Dans l'object compagnon du type
 
-```scala
+```tut:silent
 object Player {
     implicit val playerGreeter: CanGreet[Player] = new CanGreet[Player] {
         def sayHi(t: Player): String = s"Hi, I'm player ${t.nickname}, I'm lvl ${t.level} !"
@@ -240,7 +240,7 @@ def greet[T](t: T)(implicit greeter: CanGreet[T]): String = greeter.sayHi(t)
 
 #### Ajout de propriétés à des types existants
 
-```scala
+```tut:silent
 import java.net.URL
 
 implicit val urlGreeter: CanGreet[URL] = new CanGreet[URL] {
@@ -252,9 +252,11 @@ Maintenant votre _URL_ sait dire bonjour !
 
 #### Interfaçage conditionnel
 
-```scala
+```tut:silent
+trait CanWave[A]
+
 implicit def listGreeter[A: CanGreet: CanWave]: CanGreet[List[A]] = new CanGreet[List[A]] {
-    override def sayHi(t: List[A]): String = s"Hi, I'm an List : [${t.map(CanGreet[A].sayHi).mkString(",")}]"
+    override def sayHi(t: List[A]): String = s"Hi, I'm an List : [${t.map(implicitly[CanGreet[A]].sayHi).mkString(",")}]"
 }
 ```
 
@@ -268,14 +270,14 @@ implicit def listGreeter[A: CanGreet: CanWave]: CanGreet[List[A]] = new CanGreet
 
 ## Context bound
 
-```scala
-def greet[T](t: T)(implicit greeter: CanGreet[T]): String
+```tut:silent
+def greet[T](t: T)(implicit greeter: CanGreet[T]): String = ???
 ```
 
 Peut être refactoré en (absolument identique):
 
-```scala
-def greet[T: CanGreet](t: T): String
+```tut:silent
+def greet[T: CanGreet](t: T): String = ???
 ```
 
 Plus clean et exprime la contrainte que `T` doit être une instance de `CanGreet`
@@ -286,7 +288,7 @@ Plus clean et exprime la contrainte que `T` doit être une instance de `CanGreet
 
 Mais comment récupère t-on notre greeter ?
 
-```scala
+```tut:silent
 def greet[T: CanGreet](t: T): String = {
     val greeter: CanGreet[T] = implicitly[CanGreet[T]]
     greeter.sayHi(t)
@@ -295,7 +297,7 @@ def greet[T: CanGreet](t: T): String = {
 
 ![seriously](/ressources/img/seriously.png) <!-- .element style="border: 0; background: None; box-shadow: None; width: 200px; margin-bottom: 0px; margin-top: 0px;" -->
 
-```scala
+```tut:silent
 object CanGreet {
     def apply[T](implicit C: CanGreet[T]): CanGreet[T] = C
 }
@@ -303,7 +305,7 @@ object CanGreet {
 
 ... et maintenant ...
 
-```scala
+```tut:silent
 def greet[T: CanGreet](t: T): String = CanGreet[T].sayHi(t)
 ```
 
@@ -315,7 +317,7 @@ def greet[T: CanGreet](t: T): String = CanGreet[T].sayHi(t)
 
 On peut utiliser les _implicit class_ pour ajouter la _syntax_ de notre _type class_
 
-```scala
+```tut:silent
 implicit class CanGreetSyntax[T: CanGreet](t: T) {
     def greet: String = CanGreet[T].sayHi(t)
 }
@@ -335,7 +337,7 @@ C'est important une bonne syntaxe !
 
 ## Tous ensemble !
 
-```scala
+```tut:reset:silent
 trait CanGreet[T] {
     def sayHi(t: T): String
 }
@@ -383,13 +385,15 @@ import simulacrum._
 
 #### Product types
 
-```scala
+```tut:silent
+type A
+type B
 case class C(a: A, b: B)
 ```
 
 #### Sum types
 
-```scala
+```tut:silent
 sealed trait C
 case class A() extends C
 case class B() extends C
