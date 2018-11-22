@@ -19,11 +19,14 @@
 
 # Moi, moi, moi !
 
-- Consultant Ebiznext
-- _Data ingénieur_ & en charge du _pôle_ nantais
-- Passionné de FP
-- [@mmenestret](https://twitter.com/mmenestret)
-- [geekocephale.com](http://geekocephale.com/blog/)
+- _Data ingénieur_ __Ebiznext__
+    - _ESN_ avec une forte expertise autour de la data / Scala
+    - Animateur du pôle data
+    - En charge de la _branche_ nantaise
+- Co-organisateur du _SNUG_
+- Passionné de _FP_
+    - [@mmenestret](https://twitter.com/mmenestret)
+    - [geekocephale.com](http://geekocephale.com/blog/)
 
 ----
 
@@ -33,43 +36,43 @@
 
 ## Séparation donnée / comportement
 
-La programmation orientée objet et la fonctionnelle ont des relations entre la donnée et leurs comportements fondamentalement opposées !
+La programmation orientée objet et la programmation fonctionnelle: deux approches **opposées** !
 
 
 
-#### _Orienté objet_
-
-L'OOP combine la donnée et le comportement dans des _classes_
+### _Orienté objet_
 
 ![Pic pirate](/ressources/img/pic_pirate.jpg) <!-- .element style="border: 0; background: None; box-shadow: None; width: 300px; margin-bottom: 0px; margin-top: 0px;" -->
 
-- Encapsule et cache la donnée
-- Expose des méthodes pour agir dessus
+__L'OOP combine la donnée et les comportements au sein de _classes___
+
+- Encapsule et __cache la donnée dans un état interne__
+- Expose les comportements sous forme de méthodes pour celui-ci
 
 ```scala
-case class Player(nickname: String, var level: Int) {
+final class Player(private val name: String, private var level: Int) {
     def levelUp(): Unit          = { level = level + 1 }
-    def sayHi(): String          = s"Hi, I'm player $nickname, I'm lvl $level !"
+    def sayHi(): String          = s"Hi, I'm player $name, I'm lvl $level !"
 }
 ```
 
 
 
-#### _Programmation fonctionnelle_
-
-La FP sépare complètement la donnée et le comportement
+### _Programmation fonctionnelle_
 
 ![Pic pirate](/ressources/img/separation.jpg) <!-- .element style="border: 0; background: None; box-shadow: None; width: 300px; margin-bottom: 0px; margin-top: 0px;" -->
 
-- La donnée est modelisée par les _types_ (ADTs)
-- Le comportement est modélisé par des _fonctions_ (depuis et vers ces _types_)
+__La FP sépare complètement la donnée des comportements__
+
+- La donnée est modelisée par des _types algébriques de donnée_ (ADTs)
+- Les comportement sont modélisés par des _fonctions_ (depuis et vers ces _types_)
 
 ```scala
-case class Player(nickname: String, var level: Int)
+final case class Player(name: String, level: Int)
 
 object PlayerOperations {
     def levelUp(p: Player): Player = p.copy(level = p.level + 1)
-    def sayHi(p: Player): String   = s"Hi, I'm player ${p.nickname}, I'm lvl ${p.level} !"
+    def sayHi(p: Player): String   = s"Hi, I'm player ${p.name}, I'm lvl ${p.level} !"
 }
 ```
 
@@ -77,28 +80,36 @@ object PlayerOperations {
 
 ## Expression problem
 
-Comment se comporte une code base existante quand on:
+Comment se comporte un langage ou un paradigme quand on:
 
-- Étends un type existant
-- Étends les comportements d'un type existant
+- Étend un type existant (ajouter des "cas" à un type)
+    - __Personnage__ = _Joueur_ + _NPC_
+    - Et si on ajoute _Boss_ ?
+- Étend les comportements d'un type existant
+    - Un personnage peut __dire bonjour__ et __monter en niveau__
+    - Et si on ajoute le comportement de __se déplacer__ ?
 
-
-
-#### _Orienté objet_
-
-- 👍 : Étendre un type existant
-    - Nouvelle _classe_ qui _extends_ mon type existant (l'existant reste inchangé)
-- 👎 : Étendre les comportements d'un type existant
-    - Nouvelle _méthode_ sur l'interface (impact sur tous les sous types existant...)
+Ces actions entrainent-elles des modifications de la code base existante ?
 
 
 
-#### _Programmation fonctionnelle_
+### _Orienté objet_
 
-- 👎  : Étendre un type existant
-    - Nouvelle implémentation d'un sealed trait (impact sur toutes les fonctions existantes traitant ce type pour traiter ce nouveau cas...)
-- 👍 : Étendre les comportements d'un type existant
-    - Nouvelle fonction (l'existant reste inchangé)
+- 👍 : __Étendre un type existant__
+    - Juste une nouvelle _classe_ qui _extends_ mon type à étendre (la code base d'origine reste inchangée)
+- 👎 : __Étendre les comportements d'un type existant__
+    - Nouvelle _méthode_ sur le type dont on veut étendre le comportement
+    - Impact sur tous ses sous types pour y implémenter cette nouvelle méthode...
+
+
+
+### _Programmation fonctionnelle_
+
+- 👎  : __Étendre un type existant__
+    - Nouvelle implémentation du _trait_ représentant le type à étendre
+    - Impact sur toutes les fonctions existantes prenant ce type en paramètre pour traiter cette nouvelle implémentation...
+- 👍 : __Étendre les comportements d'un type existant__
+    - Juste une nouvelle fonction (la code base d'origine reste inchangée)
 
 ----
 
@@ -108,38 +119,52 @@ Comment se comporte une code base existante quand on:
 
 ## Definition
 
-Augmenter la réutilisation de code grâce à des constructions plus génériques.
+Mécanisme visant à augmenter la réutilisation de code grâce à des constructions plus génériques.
+
+__Il y a plusieurs types de polymorphisme.__
 
 
 
-## Des polymorphismes
+## Polymorphisme paramétrique
 
-- __Polymorphisme paramétrique__:
-    - Une fonction se réfère à un symbole abstrait qui peut représenter n'importe quel type
-    - `def reverse[A](as: List[A]): List[A]`
-- __Polymorphisme d'héritage__:
-    - Une fonction se réfère à plusieurs _classes_ en relation les unes aux autres à travers une _superclasse_ commune
-- __Polymorphisme ad hoc__:
-    - Une fonction se réfère à une _"interface"_ commune à un ensemble de types arbitraires qui abstrait une ou plusieurs propriétés communes
+Une fonction se réfère à un symbole abstrait qui peut représenter n'importe quel type.
 
-On va s'intéresser à ce dernier !
+`def reverse[A](as: List[A]): List[A] = ???`
+
+
+
+## Polymorphisme d'héritage
+
+Plusieurs _classes_ héritent leurs comportements d'une _super classe_ commune.
+
+```scala
+class Character(private val name: String) {
+    def sayHi(): String = s"Hi, I'm $name"
+}
+
+class Player(private val name: String, private var level: Int) extends Character(name) {
+    def levelUp(): Unit = { level = level + 1 }
+}
+```
 
 
 
 ## Polymorphisme ad hoc
 
-Une fonction se réfère à une _"interface"_ commune à un ensemble de types arbitraires qui abstrait une ou plusieurs propriétés communes:
+- Une fonction se réfère à une _"interface"_ commune à un ensemble de types arbitraires
+- Cette _"interface"_ abstrait un ou plusieurs comportements communs à ces types
+- Evite de ré-implémenter une fonction pour chaque type concrets
+    - Son comportement dépendra du type concret de son / ses paramètre(s)
+- On va s'intéresser à celui-ci !
 
-- Evite de ré-implémenter une fonction pour chaques type concrets
-- Le comportement d'une fonction dépend du type de son paramètre
-- Implémentations
-    - _Operator overloading_ (on en parlera pas ici)
-    - __Interface subtyping / adapter pattern__
-        - `def show(s: Showable): String`
-        - ಥ_ಥ
-    - __Type classes__
-        - `def show[S](s: S)(implicit show: Showable[S]): String`
-        - ᕕ( ᐛ )ᕗ
+
+
+## Deux implémentations du polymorphisme ad hoc
+
+- __Interface subtyping / adapter pattern__ - ಥ_ಥ
+    - `def show(s: Showable): String`
+- __Type classes__ - ᕕ( ᐛ )ᕗ
+    - `def show[S: Showable](s: S): String`
 
 ----
 
@@ -147,120 +172,153 @@ Une fonction se réfère à une _"interface"_ commune à un ensemble de types ar
 
 
 
+## Observations
+
+- Construction introduite en _Haskell_ par **Philip Wadler**
+- Représente un groupe ou une "__classe__" de types (_type_ *__class__*) qui partagent des propriétés communes
+- Par exemple:
+    - Le groupe de ceux qui peuvent dire "bonjour"
+    - Le groupe de ceux qui ont des pétales
+
+
+
 ## Anatomie comparée
 
-- Groupe ou "__classe__" de types (_type_ *__class__*) qui partagent des propriétés communes
-- Abstraction de ces propriétés
-    - Ceux qui peuvent dire "bonjour"
-    - Ceux qui ont des pétales
-- Joue le même rôle que l'interface en OOP, __MAIS__:
-    - Permet d'ajouter des propriétés à des types existant
-    - Permet d'encoder un interfaçage conditionnel
+Joue le même rôle qu'une _interface_ en _OOP_, __MAIS__:
+
+- Permet d'ajouter des propriétés à des types existant __à posteriori__
+- Permet d'encoder une __interface conditionnelle__
 
 
 
 ## Anatomie fonctionnelle
 
-En Scala, on encode les _type classes_: ce n'est pas une construction de première classe, c'est un design pattern:
+En Scala, on __encode__ les _type classes_, ce n'est pas une construction de première classe du langage mais un design pattern (ce n'est pas le cas de tous les langages...). 
 
-1. Un _trait_ avec un paramètre de type qui expose le "contrat" de la _type class_
-2. Des implémentations concrètes de ce trait
+On l'implémente grâce à:
+
+1. Un _trait_ avec un _paramètre de type_ qui expose les propriétés qui sont abstraites par la _type class_
+2. Les implémentations concrètes de ce trait
 
 
 
-## Anatomie fonctionnelle
+## Etude d'un spécimen
 
 
 ```scala
 // Notre classe "métier"
-case class Player(nickname: String, level: Int)
+final case class Player(name: String, level: Int)
 val geekocephale = Player("Geekocephale", 42)
 ```
-
+---
 ```scala
 // 1. Un trait: tous les T qui peuvent dire bonjour
-trait CanGreet[T] {
+trait CanSayHi[T] {
     def sayHi(t: T): String
 }
 
-// 2. Une implémentation concrète pour que Player soit une instance de CanGreet
-val playerGreeter: CanGreet[Player] = new CanGreet[Player] {
-    def sayHi(t: Player): String = s"Hi, I'm player ${t.nickname}, I'm lvl ${t.level} !"
+// 2. Une implémentation concrète pour que Player soit une instance de CanSayHi
+val playerGreeter: CanSayHi[Player] = new CanSayHi[Player] {
+    def sayHi(t: Player): String = s"Hi, I'm player ${t.name}, I'm lvl ${t.level} !"
 }
 ```
+
+---
 
 ```scala
 // Une fonction polymorphique
-def greet[T](t: T, greeter: CanGreet[T]): String = greeter.sayHi(t)
-
-// On l'utilise grâce à notre instance de type class
-greet(geekocephale, playerGreeter)
+def greet[T](t: T, greeter: CanSayHi[T]): String = greeter.sayHi(t)
 ```
-
-
-
-## Anatomie fonctionnelle
-
-`def greet[T](t: T, greeter: CanGreet[T]): String = greeter.sayHi(t)`
-
-![seriously](/ressources/img/seriously.png) <!-- .element style="border: 0; background: None; box-shadow: None; width: 200px; margin-bottom: 0px; margin-top: 0px;" -->
-
-
-
-## Anatomie fonctionnelle
-
-- Utilisons les __implicits__ pour se rapprocher de ce qui est fait en _Haskell_
-- 2 règles d'hygiène fondamentales:
-    - Une seule instance de _type class_ par type
-    - On ne met les instances de _type class_ que:
-        - Dans l'object compagnon du trait de la _type class_
-        - Dans l'object compagnon du type
 
 ```scala
-object Player {
-    implicit val playerGreeter: CanGreet[Player] = new CanGreet[Player] {
-        def sayHi(t: Player): String = s"Hi, I'm player ${t.nickname}, I'm lvl ${t.level} !"
-    }
-}
-
-def greet[T](t: T)(implicit greeter: CanGreet[T]): String = greeter.sayHi(t)
+scala> greet(geekocephale, playerGreeter)
+res4: String = Hi, I'm player Geekocephale, I'm lvl 42 !
 ```
 
 
 
 ## Anatomie fonctionnelle
 
-`greet(geekocephale)`
+Utilisons les __implicits__ pour se rapprocher de ce qui est fait en _Haskell_
 
-![so good](/ressources/img/so_good.jpg) <!-- .element style="border: 0; background: None; box-shadow: None; width: 200px; margin-bottom: 0px; margin-top: 0px;" -->
+```scala
+implicit val playerGreeter: CanSayHi[Player] = new CanSayHi[Player] {
+    def sayHi(t: Player): String = s"Hi, I'm player ${t.name}, I'm lvl ${t.level} !"
+}
+
+def greet[T](t: T)(implicit greeter: CanSayHi[T]): String = greeter.sayHi(t)
+```
+
+```scala
+scala> greet(geekocephale)
+res5: String = Hi, I'm player Geekocephale, I'm lvl 42 !
+```
+
+
+
+## Nota bene
+
+2 règles d'hygiène fondamentales:
+
+- Une seule instance d'une _type class_ par type
+- On ne met les instances de _type class_ que:
+    - Dans l'object compagnon de la _type class_
+    - Dans l'object compagnon du type
 
 
 
 ## Retour à l'anatomie comparée
 
-#### Ajout de propriétés à des types existants
+### Ajout de propriétés à des types existants
 
 ```scala
 import java.net.URL
 
-implicit val urlGreeter: CanGreet[URL] = new CanGreet[URL] {
-    override def sayHi(t: URL): String = s"Hi, I'm an URL pointing at ${t.getPath}"
+implicit val urlGreeter: CanSayHi[URL] = new CanSayHi[URL] {
+    override def sayHi(t: URL): String = s"Hi, I'm an URL pointing at ${t.getHost}"
 }
+```
+
+```scala
+scala> greet(new URL("http://geekocephale.com"))
+res6: String = Hi, I'm an URL pointing at geekocephale.com
 ```
 
 Maintenant votre _URL_ sait dire bonjour !
 
-#### Interfaçage conditionnel
+
+
+## Retour à l'anatomie comparée
+
+### Interfaçage conditionnel
 
 ```scala
-trait CanWave[A]
+trait CanSayItsName[A] {
+    def sayMyName(a: A): String
+}
 
-implicit def listGreeter[A: CanGreet: CanWave]: CanGreet[List[A]] = new CanGreet[List[A]] {
-    override def sayHi(t: List[A]): String = s"Hi, I'm an List : [${t.map(implicitly[CanGreet[A]].sayHi).mkString(",")}]"
+implicit def greeter[A](implicit nameSayer: CanSayItsName[A]): CanSayHi[A] = new CanSayHi[A] {
+    override def sayHi(a: A): String = s"Hi, I'm ${nameSayer.sayMyName(a)} !"
 }
 ```
 
-`List[A]` est une instance de la _type class_ `CanGreet` si et seulement si `A` en est une instance mais également une instance de `CanWave`.
+`A` est une instance de la _type class_ `CanSayHi` si et seulement si `A` est également une instance de `CanSayItsName`.
+
+
+
+## Retour à l'anatomie comparée
+
+### Interfaçage conditionnel
+
+```scala
+final case class Guild(members: List[Player])
+
+implicit def guildGreeter(implicit playerGreeter: CanSayHi[Player]): CanSayHi[Guild] = new CanSayHi[Guild] {
+    override def sayHi(g: Guild): String = s"""Hi, we are ${g.members.map(p => playerGreeter.sayHi(p).mkString(","))}"""
+}
+```
+
+`Guild` est une instance de la _type class_ `CanSayHi` si et seulement si `Player` en est une instance également.
 
 ----
 
@@ -270,17 +328,13 @@ implicit def listGreeter[A: CanGreet: CanWave]: CanGreet[List[A]] = new CanGreet
 
 ## Context bound
 
-```scala
-def greet[T](t: T)(implicit greeter: CanGreet[T]): String = ???
-```
+`def greet[T](t: T)(implicit greeter: CanSayHi[T]): String = ???`
 
-Peut être refactoré en (absolument identique):
+Peut être refactoré en (__absolument identique__):
 
-```scala
-def greet[T: CanGreet](t: T): String = ???
-```
+`def greet[T: CanSayHi](t: T): String = ???`
 
-Plus clean et exprime la contrainte que `T` doit être une instance de `CanGreet`
+Plus clean et exprime plus clairement la __contrainte__ que `T` doit être une instance de `CanSayHi`
 
 
 
@@ -289,27 +343,25 @@ Plus clean et exprime la contrainte que `T` doit être une instance de `CanGreet
 Mais comment récupère t-on notre greeter ?
 
 ```scala
-def greet[T: CanGreet](t: T): String = {
-    val greeter: CanGreet[T] = implicitly[CanGreet[T]]
+def greet[T: CanSayHi](t: T): String = {
+    val greeter: CanSayHi[T] = implicitly[CanSayHi[T]]
     greeter.sayHi(t)
 }
 ```
 
-![seriously](/ressources/img/seriously.png) <!-- .element style="border: 0; background: None; box-shadow: None; width: 200px; margin-bottom: 0px; margin-top: 0px;" -->
+... `implicitly[CanSayHi[T]]`... ![seriously](/ressources/img/seriously.png) <!-- .element style="border: 0; background: None; box-shadow: None; width: 50px; margin-bottom: 0px; margin-top: 0px;" -->
+
+---
 
 ```scala
-object CanGreet {
-    def apply[T](implicit C: CanGreet[T]): CanGreet[T] = C
+object CanSayHi {
+    def apply[T](implicit C: CanSayHi[T]): CanSayHi[T] = C
 }
+
+def greet[T: CanSayHi](t: T): String = CanSayHi[T].sayHi(t)
 ```
 
-... et maintenant ...
-
-```scala
-def greet[T: CanGreet](t: T): String = CanGreet[T].sayHi(t)
-```
-
-![so good](/ressources/img/so_good.jpg) <!-- .element style="border: 0; background: None; box-shadow: None; width: 200px; margin-bottom: 0px; margin-top: 0px;" -->
+C'est mieux ! ![so good](/ressources/img/so_good.jpg) <!-- .element style="border: 0; background: None; box-shadow: None; width: 50px; margin-bottom: 0px; margin-top: 0px;" -->
 
 
 
@@ -318,16 +370,12 @@ def greet[T: CanGreet](t: T): String = CanGreet[T].sayHi(t)
 On peut utiliser les _implicit class_ pour ajouter la _syntax_ de notre _type class_
 
 ```scala
-implicit class CanGreetSyntax[T: CanGreet](t: T) {
-    def greet: String = CanGreet[T].sayHi(t)
+implicit class CanSayHiSyntax[T: CanSayHi](t: T) {
+    def greet: String = CanSayHi[T].sayHi(t)
 }
 ```
 
-Ce qui nous permet:
-
-```scala
-geekocephale.greet
-```
+Ce qui nous permet d'écrire: `geekocephale.greet`
 
 C'est important une bonne syntaxe !
 
@@ -338,23 +386,25 @@ C'est important une bonne syntaxe !
 ## Tous ensemble !
 
 ```scala
-trait CanGreet[T] {
+trait CanSayHi[T] {
     def sayHi(t: T): String
 }
 
-object CanGreet {
-    def apply[T](implicit C: CanGreet[T]): CanGreet[T] = C
+object CanSayHi {
+    def apply[T](implicit C: CanSayHi[T]): CanSayHi[T] = C
 }
 
-implicit class CanGreetSyntax[T: CanGreet](t: T) {
-    def greet: String = CanGreet[T].sayHi(t)
+implicit class CanSayHiSyntax[T: CanSayHi](t: T) {
+    def greet: String = CanSayHi[T].sayHi(t)
 }
+```
 
-case class Player(nickname: String, var level: Int)
+```scala
+final case class Player(name: String, var level: Int)
 
 object Player {
-    implicit val playerGreeter: CanGreet[Player] = new CanGreet[Player] {
-        def sayHi(t: Player): String = s"Hi, I'm player ${t.nickname}, I'm lvl ${t.level} !"
+    implicit val playerGreeter: CanSayHi[Player] = new CanSayHi[Player] {
+        def sayHi(t: Player): String = s"Hi, I'm player ${t.name}, I'm lvl ${t.level} !"
     }
 }
 ```
@@ -367,12 +417,12 @@ object Player {
 
 ## Simulacrum
 
-[Simulacrum](https://github.com/mpilquist/simulacrum) permet de se débarasser du boiler plate
+[Simulacrum](https://github.com/mpilquist/simulacrum) permet de se débarasser du boiler plate en le générant automatiquement, à la compilation, grâce à des macros
 
 ```scala
 import simulacrum._
 
-@typeclass trait CanGreet[T] {
+@typeclass trait CanSayHi[T] {
     @op("greet") def sayHi(t: T): String
 }
 ```
@@ -381,26 +431,25 @@ import simulacrum._
 
 ## Magnolia
 
-[Magnolia](https://github.com/propensive/magnolia) permet la dérivation automatique de _type classes_
+[Magnolia](https://github.com/propensive/magnolia) permet la dérivation automatique de _type classes_ pour les __ADTs__
 
-#### Product types
+__Product types:__
 
 ```scala
 type A
 type B
-case class C(a: A, b: B)
+final case class C(a: A, b: B)
 ```
 
-#### Sum types
+__Sum types:__
 
 ```scala
 sealed trait C
-case class A() extends C
-case class B() extends C
+final case class A() extends C
+final case class B() extends C
 ```
 
 Si `A` et `B` sont des instances d'une _type class_ `T`, alors `C` l'est aussi, "automatiquement" !
-
 
 ----
 
@@ -421,8 +470,8 @@ Si `A` et `B` sont des instances d'une _type class_ `T`, alors `C` l'est aussi, 
 Les _type classes_ permettent:
 
 - De ne pas mixer comportements et donnée
-- L'_ad hoc polymorphism_ sans héritage / sub-typing d'interfaces
-- D'ajouter du comportement à un type __à posteriori__ sans y toucher
+- L'_ad hoc polymorphism_
+- D'ajouter du comportement à un type __à posteriori__
 
 ----
 
