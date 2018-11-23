@@ -47,7 +47,7 @@ La programmation orientée objet et la programmation fonctionnelle: deux approch
 __L'OOP combine la donnée et les comportements au sein de _classes___
 
 - Encapsule et __cache la donnée dans un état interne__
-- Expose les comportements sous forme de méthodes pour celui-ci
+- Expose les comportements sous forme de méthodes pour agir sur celui-ci
 
 ```tut:silent
 final class Player(private val name: String, private var level: Int) {
@@ -83,7 +83,7 @@ object PlayerOperations {
 Comment se comporte un langage ou un paradigme quand on:
 
 - Étend un type existant (ajouter des "cas" à un type)
-    - __Personnage__ = _Joueur_ + _NPC_
+    - __Personnage__ = _Joueur_ + _Personnage non joueur_
     - Et si on ajoute _Boss_ ?
 - Étend les comportements d'un type existant
     - Un personnage peut __dire bonjour__ et __monter en niveau__
@@ -127,7 +127,7 @@ __Il y a plusieurs types de polymorphisme.__
 
 ## Polymorphisme paramétrique
 
-Une fonction se réfère à un symbole abstrait qui peut représenter n'importe quel type.
+__Une fonction se réfère à un symbole abstrait qui peut représenter n'importe quel type.__
 
 `def reverse[A](as: List[A]): List[A] = ???`
 
@@ -135,7 +135,7 @@ Une fonction se réfère à un symbole abstrait qui peut représenter n'importe 
 
 ## Polymorphisme d'héritage
 
-Plusieurs _classes_ héritent leurs comportements d'une _super classe_ commune.
+__Plusieurs _classes_ héritent leurs comportements d'une _super classe_ commune.__
 
 ```tut:silent
 class Character(private val name: String) {
@@ -151,7 +151,8 @@ class Player(private val name: String, private var level: Int) extends Character
 
 ## Polymorphisme ad hoc
 
-- Une fonction se réfère à une _"interface"_ commune à un ensemble de types arbitraires
+__Une fonction se réfère à une _"interface"_ commune à un ensemble de types arbitraires.__
+
 - Cette _"interface"_ abstrait un ou plusieurs comportements communs à ces types
 - Evite de ré-implémenter une fonction pour chaque type concrets
     - Son comportement dépendra du type concret de son / ses paramètre(s)
@@ -175,7 +176,7 @@ class Player(private val name: String, private var level: Int) extends Character
 ## Observations
 
 - Construction introduite en _Haskell_ par **Philip Wadler**
-- Représente un groupe ou une "__classe__" de types (_type_ *__class__*) qui partagent des propriétés communes
+- Représente un groupe ou une "__classe__" de types (_type_ *__class__*) arbitraire qui partagent des propriétés communes
 - Par exemple:
     - Le groupe de ceux qui peuvent dire "bonjour"
     - Le groupe de ceux qui ont des pétales
@@ -241,11 +242,11 @@ greet(geekocephale, playerGreeter)
 Utilisons les __implicits__ pour se rapprocher de ce qui est fait en _Haskell_
 
 ```tut:silent
+def greet[T](t: T)(implicit greeter: CanSayHi[T]): String = greeter.sayHi(t)
+
 implicit val playerGreeter: CanSayHi[Player] = new CanSayHi[Player] {
     def sayHi(t: Player): String = s"Hi, I'm player ${t.name}, I'm lvl ${t.level} !"
 }
-
-def greet[T](t: T)(implicit greeter: CanSayHi[T]): String = greeter.sayHi(t)
 ```
 
 ```tut
@@ -258,7 +259,7 @@ greet(geekocephale)
 
 2 règles d'hygiène fondamentales:
 
-- Une seule instance d'une _type class_ par type
+- Une seule implémentation d'une _type class_ par type
 - On ne met les instances de _type class_ que:
     - Dans l'object compagnon de la _type class_
     - Dans l'object compagnon du type
